@@ -1,0 +1,335 @@
+{
+  "version": "2.0.7",
+  "name": "anemometer_dial",
+  "description": "Hand-tool anemometer program for M5Stack DIAL + WindQX sensor",
+  "author": "McOrts",
+  "target": "M5DIAL",
+  "blocks": {
+    "setup": {
+      "comment": "Initialisation — runs once at power-on",
+      "blocks": [
+        {
+          "type": "screen_bg_color",
+          "params": { "color": "0x000000" }
+        },
+        {
+          "type": "screen_draw_arc",
+          "comment": "Full gauge background arc (dark gray)",
+          "params": {
+            "cx": 120, "cy": 120, "radius": 100,
+            "start_angle": 135, "end_angle": 45,
+            "width": 8, "color": "0x222222"
+          }
+        },
+        {
+          "type": "variable_set",
+          "params": { "name": "CALIBRATION_OFFSET", "value": 0.0 }
+        },
+        {
+          "type": "variable_set",
+          "params": { "name": "MAX_SPEED_SCALE", "value": 30.0 }
+        },
+        {
+          "type": "variable_set",
+          "params": { "name": "REFRESH_MS", "value": 200 }
+        },
+        {
+          "type": "variable_set",
+          "params": { "name": "NEEDLE_COLOR", "value": "0xFF4500" }
+        },
+        {
+          "type": "variable_set",
+          "params": { "name": "wind_speed", "value": 0.0 }
+        },
+        {
+          "type": "variable_set",
+          "params": { "name": "max_gust", "value": 0.0 }
+        },
+        {
+          "type": "variable_set",
+          "params": { "name": "unit", "value": "m/s" }
+        },
+        {
+          "type": "variable_set",
+          "params": { "name": "display_mode", "value": "normal" }
+        },
+        {
+          "type": "screen_add_label",
+          "id": "lbl_speed",
+          "params": { "text": "0.0", "x": 82, "y": 88, "font_size": 48, "color": "0xFFFFFF" }
+        },
+        {
+          "type": "screen_add_label",
+          "id": "lbl_unit",
+          "params": { "text": "m/s", "x": 105, "y": 148, "font_size": 18, "color": "0x888888" }
+        },
+        {
+          "type": "screen_add_label",
+          "id": "lbl_beaufort",
+          "params": { "text": "Bft 0", "x": 90, "y": 172, "font_size": 14, "color": "0xFFFF00" }
+        },
+        {
+          "type": "screen_add_label",
+          "id": "lbl_mode",
+          "params": { "text": "", "x": 100, "y": 55, "font_size": 12, "color": "0x00BFFF" }
+        },
+        {
+          "type": "uart_init",
+          "params": {
+            "port": 1,
+            "tx_pin": 2,
+            "rx_pin": 1,
+            "baud_rate": 9600,
+            "data_bits": 8,
+            "parity": "none",
+            "stop_bits": 1
+          }
+        }
+      ]
+    },
+    "loop": {
+      "comment": "Main loop — 5 Hz update from WindQX sensor",
+      "blocks": [
+        {
+          "type": "uart_read_line",
+          "params": { "port": 1, "timeout_ms": 300 },
+          "output_var": "raw_data"
+        },
+        {
+          "type": "if",
+          "condition": { "type": "string_starts_with", "value": "raw_data", "prefix": "$WINDSPC" },
+          "then": [
+            {
+              "type": "string_split",
+              "params": { "string": "raw_data", "delimiter": "," },
+              "output_var": "fields"
+            },
+            {
+              "type": "variable_set",
+              "params": { "name": "wind_speed_ms", "value": { "type": "list_get", "list": "fields", "index": 1, "cast": "float" } }
+            },
+            {
+              "type": "variable_set",
+              "comment": "Apply calibration offset",
+              "params": { "name": "wind_speed_ms", "value": { "type": "math_add", "a": "wind_speed_ms", "b": "CALIBRATION_OFFSET" } }
+            },
+            {
+              "type": "if_elif_else",
+              "comment": "Unit conversion",
+              "conditions": [
+                {
+                  "condition": { "type": "eq", "a": "unit", "b": "km/h" },
+                  "then": [
+                    { "type": "variable_set", "params": { "name": "wind_speed", "value": { "type": "math_mul", "a": "wind_speed_ms", "b": 3.6 } } }
+                  ]
+                },
+                {
+                  "condition": { "type": "eq", "a": "unit", "b": "knots" },
+                  "then": [
+                    { "type": "variable_set", "params": { "name": "wind_speed", "value": { "type": "math_mul", "a": "wind_speed_ms", "b": 1.944 } } }
+                  ]
+                }
+              ],
+              "else": [
+                { "type": "variable_set", "params": { "name": "wind_speed", "value": "wind_speed_ms" } }
+              ]
+            },
+            {
+              "type": "if",
+              "comment": "Track maximum gust",
+              "condition": { "type": "gt", "a": "wind_speed_ms", "b": "max_gust" },
+              "then": [
+                { "type": "variable_set", "params": { "name": "max_gust", "value": "wind_speed_ms" } }
+              ]
+            },
+            {
+              "type": "if_elif_else",
+              "comment": "Update display based on mode",
+              "conditions": [
+                {
+                  "condition": { "type": "eq", "a": "display_mode", "b": "max" },
+                  "then": [
+                    { "type": "label_set_text", "params": { "id": "lbl_speed", "text": { "type": "format_float", "value": "max_gust", "decimals": 1 } } },
+                    { "type": "label_set_text", "params": { "id": "lbl_mode", "text": "MAX" } }
+                  ]
+                }
+              ],
+              "else": [
+                { "type": "label_set_text", "params": { "id": "lbl_speed", "text": { "type": "format_float", "value": "wind_speed", "decimals": 1 } } },
+                { "type": "label_set_text", "params": { "id": "lbl_mode", "text": "" } }
+              ]
+            },
+            {
+              "type": "label_set_text",
+              "params": { "id": "lbl_unit", "text": "unit" }
+            },
+            {
+              "type": "function_call",
+              "params": { "name": "draw_needle", "args": ["wind_speed_ms"] }
+            },
+            {
+              "type": "function_call",
+              "params": { "name": "update_beaufort", "args": ["wind_speed_ms"] }
+            }
+          ]
+        },
+        {
+          "type": "wait_ms",
+          "params": { "ms": "REFRESH_MS" }
+        }
+      ]
+    },
+    "events": {
+      "encoder_rotate": {
+        "comment": "Handle encoder rotation to change units / display mode",
+        "blocks": [
+          {
+            "type": "if",
+            "condition": { "type": "gt", "a": "encoder_delta", "b": 0 },
+            "comment": "Clockwise — cycle units",
+            "then": [
+              {
+                "type": "if_elif_else",
+                "conditions": [
+                  {
+                    "condition": { "type": "eq", "a": "unit", "b": "m/s" },
+                    "then": [ { "type": "variable_set", "params": { "name": "unit", "value": "km/h" } } ]
+                  },
+                  {
+                    "condition": { "type": "eq", "a": "unit", "b": "km/h" },
+                    "then": [ { "type": "variable_set", "params": { "name": "unit", "value": "knots" } } ]
+                  }
+                ],
+                "else": [ { "type": "variable_set", "params": { "name": "unit", "value": "m/s" } } ]
+              }
+            ]
+          },
+          {
+            "type": "if",
+            "condition": { "type": "lt", "a": "encoder_delta", "b": 0 },
+            "comment": "Counter-clockwise — toggle display mode",
+            "then": [
+              {
+                "type": "if_elif_else",
+                "conditions": [
+                  {
+                    "condition": { "type": "eq", "a": "display_mode", "b": "normal" },
+                    "then": [ { "type": "variable_set", "params": { "name": "display_mode", "value": "max" } } ]
+                  }
+                ],
+                "else": [ { "type": "variable_set", "params": { "name": "display_mode", "value": "normal" } } ]
+              }
+            ]
+          }
+        ]
+      },
+      "encoder_long_press": {
+        "comment": "Long press (>= 2 s) — reset max gust",
+        "blocks": [
+          { "type": "variable_set", "params": { "name": "max_gust", "value": 0.0 } },
+          { "type": "screen_flash", "params": { "color": "0x00FF00", "duration_ms": 200 } }
+        ]
+      }
+    },
+    "functions": {
+      "draw_needle": {
+        "comment": "Draw the gauge needle at the angle corresponding to wind speed",
+        "params": ["speed_ms"],
+        "blocks": [
+          {
+            "type": "variable_set",
+            "comment": "Map 0-MAX_SPEED_SCALE m/s to 135°-405° (270° sweep)",
+            "params": {
+              "name": "needle_angle",
+              "value": {
+                "type": "math_map",
+                "value": "speed_ms",
+                "in_min": 0, "in_max": "MAX_SPEED_SCALE",
+                "out_min": 135, "out_max": 405
+              }
+            }
+          },
+          {
+            "type": "variable_set",
+            "params": {
+              "name": "needle_x",
+              "value": { "type": "math_add", "a": 120, "b": { "type": "math_cos_deg", "angle": "needle_angle", "scale": 85 } }
+            }
+          },
+          {
+            "type": "variable_set",
+            "params": {
+              "name": "needle_y",
+              "value": { "type": "math_add", "a": 120, "b": { "type": "math_sin_deg", "angle": "needle_angle", "scale": 85 } }
+            }
+          },
+          {
+            "type": "screen_draw_arc",
+            "comment": "Active arc (coloured portion)",
+            "params": {
+              "cx": 120, "cy": 120, "radius": 100,
+              "start_angle": 135, "end_angle": "needle_angle",
+              "width": 8, "color": "NEEDLE_COLOR"
+            }
+          },
+          {
+            "type": "screen_draw_arc",
+            "comment": "Inactive arc (dark portion ahead of needle)",
+            "params": {
+              "cx": 120, "cy": 120, "radius": 100,
+              "start_angle": "needle_angle", "end_angle": 45,
+              "width": 8, "color": "0x222222"
+            }
+          }
+        ]
+      },
+      "update_beaufort": {
+        "comment": "Set Beaufort scale label from speed in m/s",
+        "params": ["speed_ms"],
+        "blocks": [
+          {
+            "type": "variable_set",
+            "params": {
+              "name": "bft",
+              "value": {
+                "type": "if_elif_else_expr",
+                "cases": [
+                  { "condition": { "type": "lte", "a": "speed_ms", "b": 0.2 },  "value": 0 },
+                  { "condition": { "type": "lte", "a": "speed_ms", "b": 1.5 },  "value": 1 },
+                  { "condition": { "type": "lte", "a": "speed_ms", "b": 3.3 },  "value": 2 },
+                  { "condition": { "type": "lte", "a": "speed_ms", "b": 5.4 },  "value": 3 },
+                  { "condition": { "type": "lte", "a": "speed_ms", "b": 7.9 },  "value": 4 },
+                  { "condition": { "type": "lte", "a": "speed_ms", "b": 10.7 }, "value": 5 },
+                  { "condition": { "type": "lte", "a": "speed_ms", "b": 13.8 }, "value": 6 },
+                  { "condition": { "type": "lte", "a": "speed_ms", "b": 17.1 }, "value": 7 },
+                  { "condition": { "type": "lte", "a": "speed_ms", "b": 20.7 }, "value": 8 },
+                  { "condition": { "type": "lte", "a": "speed_ms", "b": 24.4 }, "value": 9 },
+                  { "condition": { "type": "lte", "a": "speed_ms", "b": 28.4 }, "value": 10 },
+                  { "condition": { "type": "lte", "a": "speed_ms", "b": 32.6 }, "value": 11 }
+                ],
+                "default": 12
+              }
+            }
+          },
+          {
+            "type": "label_set_text",
+            "params": {
+              "id": "lbl_beaufort",
+              "text": { "type": "string_concat", "values": ["Bft ", "bft"] }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "ui_layout": {
+    "canvas_width": 240,
+    "canvas_height": 240,
+    "widgets": [
+      { "id": "lbl_speed",    "type": "label", "x": 82,  "y": 88,  "font_size": 48, "color": "0xFFFFFF", "initial_text": "0.0" },
+      { "id": "lbl_unit",     "type": "label", "x": 105, "y": 148, "font_size": 18, "color": "0x888888", "initial_text": "m/s" },
+      { "id": "lbl_beaufort", "type": "label", "x": 90,  "y": 172, "font_size": 14, "color": "0xFFFF00", "initial_text": "Bft 0" },
+      { "id": "lbl_mode",     "type": "label", "x": 100, "y": 55,  "font_size": 12, "color": "0x00BFFF", "initial_text": "" }
+    ]
+  }
+}
