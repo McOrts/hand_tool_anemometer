@@ -38,15 +38,15 @@ The program is written **entirely with visual blocks** in the **UIFlow 2.0** IDE
 
 ## Bill of Materials
 
-| # | Component | Qty | Notes |
-|---|-----------|-----|-------|
-| 1 | [M5Stack DIAL](https://shop.m5stack.com/products/m5stack-dial-esp32-s3-smart-rotary-knob-w-1-28-inch-ips-round-touch-screen) | 1 | ESP32-S3, 1.28″ round display |
-| 2 | WindQX Solid-State Anemometer | 1 | 5 V, UART output, RS-485 optional |
-| 3 | 3D-printed case | 1 | Files in [`3d/`](3d/) |
-| 4 | Li-Po rechargeable battery | 1 | 3.7 V, 500 mAh (fits M5Stack DIAL) |
-| 5 | Grove cable (4-pin, 20 cm) | 1 | Sensor ↔ DIAL Grove port |
-| 6 | M3 × 8 mm screws | 4 | To close the case |
-| 7 | USB-C cable | 1 | Programming and charging |
+| # | Component | Qty | Notes |Buy link|
+|---|-----------|-----|-------|--------|
+| 1 | [M5Stack DIAL](https://shop.m5stack.com/products/m5stack-dial-esp32-s3-smart-rotary-knob-w-1-28-inch-ips-round-touch-screen) | 1 | ESP32-S3, 1.28″ round display |[Aliexpress](https://es.aliexpress.com/item/1005008611518463.html)|
+| 2 | WindQX SA.01P Solid-State Anemometer | 1 | 5 V, UART output, RS-485 optional |[BricoGeek](https://tienda.bricogeek.com/otros-sensores/2106-anemometro-termico-profesional-sin-partes-moviles-sa01p.html)|
+| 3 | 3D-printed case | 1 | Files in [`3d/`](3d/) | |
+| 4 | Li-Po rechargeable battery | 1 | 3.7 V, 500 mAh (fits M5Stack DIAL) | |
+| 5 | Grove cable (4-pin, 20 cm) | 1 | Sensor ↔ DIAL Grove port | |
+| 6 | M3 × 8 mm screws | 4 | To close the case | |
+| 7 | USB-C cable | 1 | Programming and charging | |
 
 **Tools required:** soldering iron (optional), small Phillips screwdriver, 3D printer (or printing service).
 
