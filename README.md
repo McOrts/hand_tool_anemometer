@@ -45,7 +45,7 @@ The program is written **entirely with visual blocks** in the **UIFlow 2.0** IDE
 | 3 | 3D-printed case | 1 | Files in [`3d/`](3d/) | <img src="docs/images/M5D_WindQX_3Dpieces.png" width="400" align="center"/> |
 | 4 | [Li-Po rechargeable battery](https://es.aliexpress.com/item/1005007257546981.html) | 1 | 3.7v 3400mAh 18650 Li-ion with PH1.25mm 2P | <img src="docs/images/18650_Li-ion_Cable.png" width="200" align="center"/> |
 | 5 | [Grove cable 4-pin, 10 cm](https://es.aliexpress.com/item/1005007474983293.html) | 1 | HY2.0-4Pin for M5Stack Development Board | <img src="docs/images/groveCable.jpg" width="200" align="center"/> |
-| 7 | USB-C cable | 1 | Programming and charging | <img src="docs/images/USBC_cable.png" width="200" align="center"/> |
+| 6 | USB-C cable | 1 | Programming and charging | <img src="docs/images/USBC_cable.png" width="200" align="center"/> |
 
 **Tools required:** soldering iron, resing 3D printer (or printing service).
 
@@ -58,6 +58,7 @@ The program is written **entirely with visual blocks** in the **UIFlow 2.0** IDE
 1. Charge the Li-Po rechargeable battery before starting. You can use the M5Stack DIAL via USB-C as a charger.
 2. Confirm the firmware version is **UIFlow 2.x** (hold the encoder button while powering on; the screen shows the current mode and firmware).
 3. If needed, flash UIFlow 2.x firmware using the [M5Burner](https://docs.m5stack.com/en/uiflow/uiflow2/m5burner) tool.
+   
 | Download the UIFlow firmware | Setup the firmware | Flash the firmaware |
 |-----------|----------|-------------|
 | <img src="docs/images/M5Burner_UIFlow2.png" width="200" align="center"/>| <img src="docs/images/UIFlow2_Configuration.png" width="200" align="center"/> | <img src="docs/images/UIFlow2_burn.png" width="200" align="center"/> |
