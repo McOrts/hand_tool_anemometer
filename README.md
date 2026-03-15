@@ -1,5 +1,7 @@
 # Hand Tool Anemometer — DIY Manual
 
+<img src="docs/images/WindQX_ HandToolAnemometer1_mini.png" width="300" align="right"/>
+
 > **A portable handheld solid-state anemometer built with an M5Stack DIAL, a WindQX solid-state anemometer sensor, a 3D-printed case, and a rechargeable battery.**
 
 ---
@@ -8,14 +10,13 @@
 
 1. [Overview](#overview)
 2. [Bill of Materials](#bill-of-materials)
-3. [Hardware Assembly](#hardware-assembly)
-4. [Wiring Diagram](#wiring-diagram)
-5. [3D-Printed Case](#3d-printed-case)
-6. [Programming with UIFlow 2.0](#programming-with-uiflow-20)
-7. [Usage](#usage)
-8. [Calibration](#calibration)
-9. [Troubleshooting](#troubleshooting)
-10. [License](#license)
+3. [3D-Printed Case](#3d-printed-case)
+4. [Hardware Assembly](#hardware-assembly)
+5. [Programming with UIFlow 2.0](#programming-with-uiflow-20)
+6. [Usage](#usage)
+7. [Calibration](#calibration)
+8. [Troubleshooting](#troubleshooting)
+9. [License](#license)
 
 ---
 
@@ -41,7 +42,7 @@ The program is written **entirely with visual blocks** in the **UIFlow 2.0** IDE
 | # | Component | Qty | Notes | Picture |
 |---|-----------|-----|-------|---------|
 | 1 | [M5Stack DIAL](https://shop.m5stack.com/products/m5stack-dial-v1-1) | 1 | ESP32-S3, 1.28″ round display |<img src="docs/images/M5D.png" width="400" align="center"/> |
-| 2 | [WindQX SA.01P Solid-State Anemometer](https://tienda.bricogeek.com/otros-sensores/2106-anemometro-termico-profesional-sin-partes-moviles-sa01p.html) | 1 | 5 V, UART output, RS-485 optional |<img src="docs/images/WIndQX_SA01P.png" width="200" align="center"/> |
+| 2 | [WindQX SA.01P Solid-State Anemometer](https://tienda.bricogeek.com/otros-sensores/2106-anemometro-termico-profesional-sin-partes-moviles-sa01p.html) | 1 | 5 V, I2C output, UART optional |<img src="docs/images/WIndQX_SA01P.png" width="200" align="center"/> |
 | 3 | 3D-printed case | 1 | Files in [`3d/`](3d/) | <img src="docs/images/M5D_WindQX_3Dpieces.png" width="400" align="center"/> |
 | 4 | [Li-Po rechargeable battery](https://es.aliexpress.com/item/1005007257546981.html) | 1 | 3.7v 3400mAh 18650 Li-ion with PH1.25mm 2P | <img src="docs/images/18650_Li-ion_Cable.png" width="200" align="center"/> |
 | 5 | [Grove cable 4-pin, 10 cm](https://es.aliexpress.com/item/1005007474983293.html) | 1 | HY2.0-4Pin for M5Stack Development Board | <img src="docs/images/groveCable.jpg" width="200" align="center"/> |
@@ -51,66 +52,57 @@ The program is written **entirely with visual blocks** in the **UIFlow 2.0** IDE
 
 ---
 
-## Hardware Assembly
-
-### Step 1 — Prepare the M5Stack DIAL
-
-1. Charge the Li-Po rechargeable battery before starting. You can use the M5Stack DIAL via USB-C as a charger.
-2. Confirm the firmware version is **UIFlow 2.x** (hold the encoder button while powering on; the screen shows the current mode and firmware).
-3. If needed, flash UIFlow 2.x firmware using the [M5Burner](https://docs.m5stack.com/en/uiflow/uiflow2/m5burner) tool.
-   
-| Download the UIFlow firmware | Setup the firmware | Flash the firmaware |
-|-----------|----------|-------------|
-| <img src="docs/images/M5Burner_UIFlow2.png" width="200" align="center"/>| <img src="docs/images/UIFlow2_Configuration.png" width="200" align="center"/> | <img src="docs/images/UIFlow2_burn.png" width="200" align="center"/> |
-
-### Step 2 — Connect the WindQX Sensor
-
-The WindQX sensor communicates over **UART** at 9 600 baud (default). Connect it to the M5Stack DIAL **Grove Port A** (bottom connector) using a standard Grove cable:
-
-| Grove Pin | DIAL Pin | WindQX Wire |
-|-----------|----------|-------------|
-| 1 — Yellow | GPIO 1 (RX) | TX |
-| 2 — White  | GPIO 2 (TX) | RX |
-| 3 — Red    | 5 V         | VCC |
-| 4 — Black  | GND         | GND |
-
-> ⚠️ The WindQX sensor requires **5 V**. The M5Stack DIAL Grove port provides 5 V on pin 3. Do not exceed this voltage.
-
-### Step 3 — Install the Battery
-
-The M5Stack DIAL has an internal JST connector for a Li-Po battery. Insert the 3.7 V 500 mAh battery and secure it with the provided adhesive pad if your enclosure requires it.
-
-### Step 4 — Place Components in the Case
-
-See [3D-Printed Case](#3d-printed-case) for full instructions on printing and assembling the enclosure.
-
----
-
-## Wiring Diagram
-
-```
-  WindQX Sensor                   M5Stack DIAL
-  ┌────────────┐                 ┌──────────────────┐
-  │  VCC (5V)  │────────────────▶│ Grove Pin 3 (5V) │
-  │  GND       │────────────────▶│ Grove Pin 4 (GND)│
-  │  TX        │────────────────▶│ Grove Pin 1 (RX) │
-  │  RX        │◀───────────────│ Grove Pin 2 (TX) │
-  └────────────┘                 └──────────────────┘
-                                          │
-                                   Li-Po Battery
-                                   3.7V / 500mAh
-```
-
----
-
 ## 3D-Printed Case
 
 The case is designed to hold the M5Stack DIAL in one hand with the WindQX sensor pointing forward. All design files are in the [`3d/`](3d/) directory.
 
-See [`3d/README.md`](3d/README.md) for:
-- Print settings (recommended 0.2 mm layer height, 20 % infill, PLA or PETG)
-- Assembly instructions
-- STL file list
+Print settings: recommended 0.2 mm layer height, 20 % infill, PLA or PETG.
+
+---
+
+## Hardware Assembly
+
+### Step 1 — Prepare the M5Stack DIAL
+
+<img src="docs/images/UIFlow2_on_M5StackDial.jpg" width="300" align="right"/>
+
+1. Charge the Li-Po rechargeable battery before starting. You can use the M5Stack DIAL via USB-C as a charger.
+3. Confirm the firmware version is **UIFlow 2.x** (hold the encoder button while powering on; the screen shows the current mode and firmware).
+4. If needed, flash UIFlow 2.x firmware using the [M5Burner](https://docs.m5stack.com/en/uiflow/uiflow2/m5burner) tool.
+   
+| Download the UIFlow firmware | Setup the firmware | Flash the firmaware |
+|-----------|----------|-------------|
+| <img src="docs/images/M5Burner_UIFlow2.png" width="300" align="center"/>| <img src="docs/images/UIFlow2_Configuration.png" width="300" align="center"/> | <img src="docs/images/UIFlow2_burn.png" width="300" align="center"/> |
+
+### Step 2 — Connect the WindQX Sensor
+
+The WindQX sensor communicates over **I2C** at address id 54. Using the i2c0 login interface at 100 KHz. Connect it to the M5Stack DIAL **Grove Port A** (bottom right connector) using a standard Grove cable:
+<img src="docs/images/WindQX_HandTool_M5Dial_bb.png" width="300" align="right"/>
+
+| Grove Pin | DIAL Pin | WindQX Wire |
+|-----------|----------|-------------|
+| 1 — White  | SCL (15) | SCL   |
+| 2 — Yellow | SDA (13) | SDA   |
+| 3 — Red    | 5 V      | VCC + |
+| 4 — Black  | GND      | GND - |
+
+> ⚠️ The WindQX sensor requires **5 V**. The M5Stack DIAL Grove port provides 5 V on pin 3. Do not exceed this voltage.
+
+The WindQX sensors come with a connector that is not a Grove connector, so it will need to be replaced. The simplest way is to cut it off and solder the wires so that it looks like this:
+<img src="docs/images/HTA_step1.jpg" width="500" align="center"/>
+
+| 1 | 2 | 3 |
+|-----------|----------|----------|
+| <img src="docs/images/HTA_step2.jpg" width="300" align="center"/> | <img src="docs/images/HTA_step3.jpg" width="300" align="center"/> | <img src="docs/images/HTA_step4.jpg" width="300" align="center"/> | 
+
+### Step 3 — Install the Battery
+<img src="docs/images/HTA_step51" width="500" align="center"/>
+
+The M5Stack DIAL has an internal JST PH 1.25mm connector for a Li-Po battery and includes a charge regulator. Insert the 3.7 V 500 mAh battery and secure it with the provided adhesive pad if your enclosure requires it.
+
+| 1 | 2 | 3 |
+|-----------|----------|----------|
+| <img src="docs/images/HTA_step5.jpg" width="300" align="center"/> | <img src="docs/images/HTA_step6.jpg" width="300" align="center"/> | <img src="docs/images/HTA_step7.jpg" width="300" align="center"/> | 
 
 ---
 
@@ -122,11 +114,24 @@ The firmware is a **UIFlow 2.0 block program** located in [`src/anemometer_dial.
 
 1. Open [UIFlow 2.0](https://uiflow2.m5stack.com/) in your browser (or the desktop app).
 2. Connect the M5Stack DIAL via USB-C or Wi-Fi.
-3. Click **File → Open** and select `src/anemometer_dial.m5f2`.
-4. Click the **▶ Run** button to deploy it wirelessly, or **Download** to save it permanently on the device.
+
+| 3. Create a new project | 4. Click **Import project from local file** and select `src/WindQX_Anemometer.m5f2` |
+|-----------|----------|
+| <img src="docs/images/UIFlow2_P1.png" width="300" align="center"/> | <img src="docs/images/UIFlow2_P2.png" width="300" align="center"/> |
+
+| 5. Select run or download | 6. Setup the connection to burn the program |
+|-----------|----------|
+| <img src="docs/images/UIFlow2_IDE_upload.png" width="300" align="center"/> | <img src="docs/images/UIFlow2_burn.png" width="300" align="center"/> |
+
+| 7. Click **Project files (+)** and select `src/iconAlarm.png` |
+|-----------|----------|
+| <img src="docs/images/UIFlow2_P3.png" width="300" align="center"/> |
+
+---
 
 ### Program Logic (Block Overview)
 
+<img src="docs/images/WindQX_HandTool_M5Dial_UiFLOW.png" width="700" align="center"/>
 The program is structured in three parts:
 
 #### A. Initialisation (On Start)
@@ -161,24 +166,6 @@ The program is structured in three parts:
   └─ Refresh display
 ```
 
-#### WindQX UART Data Format
-
-The WindQX sensor sends ASCII frames at 9 600 baud, 8N1:
-
-```
-$WINDSPC,<speed_ms>,<direction_deg>,<temp_c>*<checksum>\r\n
-```
-
-Example: `$WINDSPC,3.40,270,22.5*6F\r\n`
-
-The program extracts the `<speed_ms>` field and converts it to the selected unit.
-
-### Detailed Block Screenshot
-
-See [`docs/programming.md`](docs/programming.md) for annotated screenshots of every block group.
-
----
-
 ## Usage
 
 1. **Power on** — Short-press the encoder button. The DIAL logo appears and the device boots (~3 s).
@@ -190,16 +177,7 @@ See [`docs/programming.md`](docs/programming.md) for annotated screenshots of ev
 
 ### Display Layout
 
-```
-          ╭─────────────────╮
-         ╱  ●────────────╮  ╲
-        │  /    3.4 m/s   │   │
-        │  │   ─────────  │   │
-        │  │  Beaufort 2  │   │
-        │  ╰──────────────╯   │
-         ╲                   ╱
-          ╰─────────────────╯
-```
+<img src="docs/images/UIFlow2_IDE_dashboard.png" width="400" align="center"/>
 
 ---
 
