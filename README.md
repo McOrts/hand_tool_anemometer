@@ -2,7 +2,7 @@
 
 <img src="docs/images/WindQX_ HandToolAnemometer1_mini.png" width="300" align="right"/>
 
-> **A portable handheld solid-state anemometer built with an M5Stack DIAL, a WindQX solid-state anemometer sensor, a 3D-printed case, and a rechargeable battery.**
+> **A portable handheld solid-state anemometer built with a M5Stack DIAL, a WindQX solid-state anemometer sensor, a 3D-printed case, and a rechargeable battery.**
 
 ---
 
