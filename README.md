@@ -32,21 +32,18 @@ The M5Stack DIAL provides:
 
 The program is written **entirely with visual blocks** in the **UIFlow 2.0** IDE, making it accessible without prior text-based coding experience.
 
-![Assembled anemometer](docs/images/assembled.png)
-> *Assembled prototype (rendering — replace with your own photo)*
-
 ---
 
 ## Bill of Materials
 
 | # | Component | Qty | Notes | Picture |
 |---|-----------|-----|-------|---------|
-| 1 | [M5Stack DIAL](https://shop.m5stack.com/products/m5stack-dial-v1-1) | 1 | ESP32-S3, 1.28″ round display |<img src="docs/images/M5D.png" width="400" align="center"/> |
+| 1 | [M5Stack DIAL](https://shop.m5stack.com/products/m5stack-dial-v1-1) | 1 | ESP32-S3, 1.28″ round display |<img src="docs/images/M5D.png" width="200" align="center"/> |
 | 2 | [WindQX SA.01P Solid-State Anemometer](https://tienda.bricogeek.com/otros-sensores/2106-anemometro-termico-profesional-sin-partes-moviles-sa01p.html) | 1 | 5 V, I2C output, UART optional |<img src="docs/images/WIndQX_SA01P.png" width="200" align="center"/> |
 | 3 | 3D-printed case | 1 | Files in [`3d/`](3d/) | <img src="docs/images/M5D_WindQX_3Dpieces.png" width="400" align="center"/> |
-| 4 | [Li-Po rechargeable battery](https://es.aliexpress.com/item/1005007257546981.html) | 1 | 3.7v 3400mAh 18650 Li-ion with PH1.25mm 2P | <img src="docs/images/18650_Li-ion_Cable.png" width="200" align="center"/> |
+| 4 | [Li-Po rechargeable battery](https://es.aliexpress.com/item/1005007257546981.html) | 1 | 3.7v 3400mAh 18650 Li-ion with PH1.25mm 2P | <img src="docs/images/18650_Li-ion_Cable.png" width="100" align="center"/> |
 | 5 | [Grove cable 4-pin, 10 cm](https://es.aliexpress.com/item/1005007474983293.html) | 1 | HY2.0-4Pin for M5Stack Development Board | <img src="docs/images/groveCable.jpg" width="200" align="center"/> |
-| 6 | USB-C cable | 1 | Programming and charging | <img src="docs/images/USBC_cable.png" width="200" align="center"/> |
+| 6 | USB-C cable | 1 | Programming and charging | <img src="docs/images/USBC_cable.png" width="100" align="center"/> |
 
 **Tools required:** soldering iron, resing 3D printer (or printing service).
 
@@ -96,7 +93,7 @@ The WindQX sensors come with a connector that is not a Grove connector, so it wi
 | <img src="docs/images/HTA_step2.jpg" width="300" align="center"/> | <img src="docs/images/HTA_step3.jpg" width="300" align="center"/> | <img src="docs/images/HTA_step4.jpg" width="300" align="center"/> | 
 
 ### Step 3 — Install the Battery
-<img src="docs/images/HTA_step51" width="500" align="center"/>
+<img src="docs/images/HTA_step51.jpg" width="500" align="center"/>
 
 The M5Stack DIAL has an internal JST PH 1.25mm connector for a Li-Po battery and includes a charge regulator. Insert the 3.7 V 500 mAh battery and secure it with the provided adhesive pad if your enclosure requires it.
 
@@ -123,9 +120,9 @@ The firmware is a **UIFlow 2.0 block program** located in [`src/anemometer_dial.
 |-----------|----------|
 | <img src="docs/images/UIFlow2_IDE_upload.png" width="300" align="center"/> | <img src="docs/images/UIFlow2_burn.png" width="300" align="center"/> |
 
-| 7. Click **Project files (+)** and select `src/iconAlarm.png` |
-|-----------|----------|
-| <img src="docs/images/UIFlow2_P3.png" width="300" align="center"/> |
+| 7. Click **Project files (+)** and select `src/iconAlarm.png` | Icon |
+|-----------|-----------|
+| <img src="docs/images/UIFlow2_P3.png" width="300" align="center"/> | <img src="src/iconAlarm.png" align="center"/> |
 
 ---
 
@@ -138,42 +135,98 @@ The program is structured in three parts:
 
 ```
 [On Start]
-  ├─ Set screen background → Black
-  ├─ Draw gauge background arc (dark gray, r=100 px, 135°–45° sweep)
-  ├─ Draw label "m/s" at centre-bottom
-  ├─ Init UART1 (TX=GPIO2, RX=GPIO1, 9600 baud)
-  └─ Set wind_speed variable → 0
+  ├─ Init built-in hardware
+  ├─ Init rotary encoder → built-in
+  ├─ Set alarmHighSpeed → 20
+  ├─ Set SA01_ADDR → 54
+  ├─ Load page0
+  ├─ Configure History chart
+  │   ├─ Series name → speed
+  │   ├─ Update mode → shift
+  │   ├─ Point count → 10
+  │   ├─ Y-axis min/max → 0 / 60
+  │   └─ Point size → width 10, height 10
+  ├─ Set last_min_ms → current ticks in milliseconds
+  ├─ Set title text → "WindQX"
+  ├─ Set dialWind current value → 20
+  ├─ Set lblWind text → "20"
+  ├─ Set kmh text → "km/h"
+  ├─ Configure alarm selector
+  │   ├─ Min → 0
+  │   ├─ Max → 100
+  │   └─ Value → alarmHighSpeed
+  ├─ Set AlarmNumber text → alarmHighSpeed
+  ├─ Turn AlarmLED off
+  ├─ Set AlarmLED size → 0 x 0
+  ├─ Set dialTemp current value → 0
+  ├─ Set lblTemp text → "0"
+  ├─ Set Celsius text → "C"
+  └─ Init I2C bus → SCL 15, SDA 13, 100 kHz
 ```
 
 #### B. Main Loop (Loop Forever)
 
 ```
 [Loop Forever]
-  ├─ UART read line → raw_data
-  ├─ Parse raw_data → wind_speed (float, m/s)
-  ├─ Update gauge needle angle (0° = 0 m/s, 270° = 30 m/s)
-  ├─ Update centre numeric label with wind_speed
-  ├─ Update Beaufort scale label
-  └─ Wait 200 ms
+  ├─ If BtnA is holding
+  │   └─ Turn off the device
+  ├─ Read 4 bytes by I2C from SA01_ADDR → data
+  ├─ Extract wind bytes
+  │   ├─ rawWind1 ← data[1]
+  │   └─ rawWind2 ← data[2]
+  ├─ Calculate wind_kmh
+  │   └─ wind_kmh = ((rawWind1 × 256) + rawWind2) ÷ 10
+  ├─ Update wind display
+  │   ├─ Set lblWind text → wind_kmh
+  │   └─ Set dialWind value → rounded wind_kmh
+  ├─ Extract temperature bytes
+  │   ├─ rawTemp3 ← data[3]
+  │   └─ rawTemp4 ← data[4]
+  ├─ Calculate temp_c
+  │   └─ temp_c = (((rawTemp3 × 256) + rawTemp4) ÷ 100) - 40
+  ├─ Round temp_c to integer
+  ├─ Update temperature display
+  │   ├─ Set lblTemp text → temp_c
+  │   └─ Set dialTemp value → temp_c
+  ├─ If rotary encoder has rotated
+  │   ├─ Change alarmHighSpeed by encoder increment
+  │   ├─ If alarmHighSpeed > 100
+  │   │   └─ Keep value unchanged
+  │   ├─ Set AlarmSelector value → alarmHighSpeed
+  │   └─ Set AlarmNumber text → alarmHighSpeed
+  ├─ If wind_kmh > alarmHighSpeed
+  │   ├─ Set AlarmLED size → 10 x 10
+  │   ├─ Turn AlarmLED on
+  │   └─ Repeat 3 times
+  │       ├─ Speaker tone 1000 for 500 ms
+  │       └─ Speaker tone 15000 for 500 ms
+  ├─ Else
+  │   ├─ Turn AlarmLED off
+  │   └─ Set AlarmLED size → 0 x 0
+  ├─ Set now_ms → current ticks in milliseconds
+  ├─ If (now_ms - last_min_ms) > 10000
+  │   ├─ Set last_min_ms → current ticks in milliseconds
+  │   └─ Add rounded wind_kmh to History chart
+  └─ Wait 250 ms
 ```
 
 #### C. Encoder Interaction (On Encoder Rotate)
 
 ```
-[On Encoder Rotate]
-  ├─ If rotate RIGHT → cycle unit (m/s → km/h → knots)
-  ├─ If rotate LEFT  → cycle display mode (gauge → graph → max)
-  └─ Refresh display
+[When AlarmSelector value changed]
+  ├─ Set AlarmNumber text → AlarmSelector value
+  └─ Set alarmHighSpeed → AlarmSelector value
 ```
 
 ## Usage
 
 1. **Power on** — Short-press the encoder button. The DIAL logo appears and the device boots (~3 s).
-2. **Read wind speed** — The gauge needle and numeric value update every 200 ms.
-3. **Change units** — Rotate the encoder clockwise to cycle: **m/s → km/h → knots → m/s**.
-4. **Max gust mode** — Rotate counter-clockwise to switch to Max Gust display (shows the highest reading since power-on).
-5. **Reset max** — Long-press (>2 s) the encoder button to reset the max gust memory.
-6. **Power off** — Double-press the encoder button.
+2. **Read wind speed** — The gauge needle and numeric value update every 250 ms. If the wind speed > 0, the LED color of sensor turns into red.
+3. **Set alarm threshold**
+   a. Rotating the encoder clockwise to increase the value or anti-clockwise to reduce the value.
+   b. By dragging the dot on the slider with your finger to the desired alarm value.
+5. **Alarm** — If the current wind speed is greater than the selected alert threshold, the device will emit beeps and the speed icon will display a red dot.
+6. **Power off** — Long-press the encoder button.
 
 ### Display Layout
 
@@ -195,10 +248,9 @@ The WindQX sensor is factory-calibrated. For best results:
 
 | Symptom | Possible cause | Fix |
 |---------|---------------|-----|
-| Display shows `---` | No UART data from sensor | Check wiring; confirm sensor is powered (5 V LED) |
-| Wind speed always 0.0 | UART baud rate mismatch | Confirm WindQX is set to 9600; see sensor manual |
-| Needle jumps erratically | Electrical noise on cable | Use a shielded Grove cable or add 100 nF cap on VCC |
-| Device won't power on | Battery depleted | Charge via USB-C for 30 min before retrying |
+| Display shows `---` | No I2C data from sensor | Check wiring; confirm sensor is powered (5 V LED) |
+| Wind speed always 0.0 | Low battery power |
+| Device won't power on | Battery depleted | Charge via USB-C for 1 hour before retrying |
 | UIFlow can't find device | Wi-Fi not connected | Use USB-C connection or check Wi-Fi credentials in M5Burner |
 
 ---
